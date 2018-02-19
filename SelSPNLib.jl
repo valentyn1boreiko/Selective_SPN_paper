@@ -178,141 +178,141 @@ function constructSelectiveSPN(X, var_num::Int; test = 0)
     return spn
 end
 
+#
+# function spn_copy(node; idIncrement = 0)
+#
+#     source = node
+#     #println(source.id)
+#     nodes = order(source)
+#     maxId = maximum(Int[node.id for node in nodes])
+#
+#     destinationNodes = Vector{SPNNode}()
+#     id2index = Dict{Int, Int}()
+#     Old_to_new = Dict{Int, Int}()
+#
+#    for node in nodes
+#  #    println("Node id", copy(node.id))
+#      Increment = maxId - copy(node.id) + 1
+#      maxId += 1
+#      if isa(node, NormalDistributionNode)
+#
+#        id_ = nextID()
+#        Old_to_new[copy(node.id)] = id_
+#        dnode = NormalDistributionNode(id_, copy(node.scope))
+#        dnode.μ = copy(node.μ)
+#        dnode.σ = copy(node.σ)
+#        push!(destinationNodes, dnode)
+#        id2index[id_] = length(destinationNodes)
+#      elseif isa(node, MultivariateFeatureNode)
+#             id_ = nextID()
+#             Old_to_new[copy(node.id)] = id_
+#  			dnode = MultivariateFeatureNode(id_, copy(node.scope))
+#  			dnode.weights[:] = node.weights
+#  			push!(destinationNodes, dnode)
+#  			id2index[id_] = length(destinationNodes)
+#      elseif isa(node, IndicatorNode)
+#        id_ = nextID()
+#        Old_to_new[copy(node.id)] = id_
+#        dnode = IndicatorNode(id_, copy(node.value), copy(node.scope))
+#        push!(destinationNodes, dnode)
+#        id2index[id_] = length(destinationNodes)
+#      elseif isa(node, SumNode)
+#        id_ = nextID()
+#        Old_to_new[copy(node.id)] = id_
+#        dnode = SumNode(id_, scope = copy(node.scope))
+#        cids = Int[child.id for child in children(node)]
+#        # println(cids)
+#        # println(id2index)
+#        for (i, cid) in enumerate(cids)
+#          try
+#              add!(dnode, destinationNodes[id2index[Old_to_new[cid]]], copy(node.weights[i]))
+#          catch
+#              info("dest node id = $(cids), transform = $(Old_to_new) all ids $(id2index)")
+#          end
+#        end
+#  			push!(destinationNodes, dnode)
+#  			id2index[id_] = length(destinationNodes)
+#  		elseif isa(node, ProductNode)
+#             id_ = nextID()
+#             Old_to_new[copy(node.id)] = id_
+#  			dnode = ProductNode(id_, scope = copy(node.scope))
+#  			cids = Int[child.id for child in children(node)]
+#  			for (i, cid) in enumerate(cids)
+#  				add!(dnode, destinationNodes[id2index[Old_to_new[cid]]])
+#  			end
+#
+#  			push!(destinationNodes, dnode)
+#  			id2index[id_] = length(destinationNodes)
+#
+#  		else
+#  			throw(TypeError(node, "Node type not supported."))
+#  		end
+#
+#  	end
+#
+#    # add!(parents(source)[1],destinationNodes[end])
+#    return destinationNodes[end]
+#
+# end
+#
 
-function spn_copy(node; idIncrement = 0)
-
-    source = node
-    #println(source.id)
-    nodes = order(source)
-    maxId = maximum(Int[node.id for node in nodes])
-
-    destinationNodes = Vector{SPNNode}()
-    id2index = Dict{Int, Int}()
-    Old_to_new = Dict{Int, Int}()
-
-   for node in nodes
- #    println("Node id", copy(node.id))
-     Increment = maxId - copy(node.id) + 1
-     maxId += 1
-     if isa(node, NormalDistributionNode)
-
-       id_ = nextID()
-       Old_to_new[copy(node.id)] = id_
-       dnode = NormalDistributionNode(id_, copy(node.scope))
-       dnode.μ = copy(node.μ)
-       dnode.σ = copy(node.σ)
-       push!(destinationNodes, dnode)
-       id2index[id_] = length(destinationNodes)
-     elseif isa(node, MultivariateFeatureNode)
-            id_ = nextID()
-            Old_to_new[copy(node.id)] = id_
- 			dnode = MultivariateFeatureNode(id_, copy(node.scope))
- 			dnode.weights[:] = node.weights
- 			push!(destinationNodes, dnode)
- 			id2index[id_] = length(destinationNodes)
-     elseif isa(node, IndicatorNode)
-       id_ = nextID()
-       Old_to_new[copy(node.id)] = id_
-       dnode = IndicatorNode(id_, copy(node.value), copy(node.scope))
-       push!(destinationNodes, dnode)
-       id2index[id_] = length(destinationNodes)
-     elseif isa(node, SumNode)
-       id_ = nextID()
-       Old_to_new[copy(node.id)] = id_
-       dnode = SumNode(id_, scope = copy(node.scope))
-       cids = Int[child.id for child in children(node)]
-       # println(cids)
-       # println(id2index)
-       for (i, cid) in enumerate(cids)
-         try
-             add!(dnode, destinationNodes[id2index[Old_to_new[cid]]], copy(node.weights[i]))
-         catch
-             info("dest node id = $(cids), transform = $(Old_to_new) all ids $(id2index)")
-         end
-       end
- 			push!(destinationNodes, dnode)
- 			id2index[id_] = length(destinationNodes)
- 		elseif isa(node, ProductNode)
-            id_ = nextID()
-            Old_to_new[copy(node.id)] = id_
- 			dnode = ProductNode(id_, scope = copy(node.scope))
- 			cids = Int[child.id for child in children(node)]
- 			for (i, cid) in enumerate(cids)
- 				add!(dnode, destinationNodes[id2index[Old_to_new[cid]]])
- 			end
-
- 			push!(destinationNodes, dnode)
- 			id2index[id_] = length(destinationNodes)
-
- 		else
- 			throw(TypeError(node, "Node type not supported."))
- 		end
-
- 	end
-
-   # add!(parents(source)[1],destinationNodes[end])
-   return destinationNodes[end]
-
-end
-
-
-function spnn_split!(node_id, var_id, spn)
-    nodes = order(spn)
-    nnode = [x for x in nodes if x.id == var_id][1]
-    _var = nnode.scope
-    _id = node_id
-
-    for node in nodes
-        if (node.id == _id)
-
-            _nodes = order(node)
-            for _node in _nodes
-                if isa(_node,SumNode)
-                    indicators = [x for x in children(_node) if (isa(x,IndicatorNode) && x.scope == _var && x.value == 0)]
-                    if (length(indicators)==1)
-
-                        # We assume that for every node there is only one parent
-                        # And the parent of the node is the sum node and we split
-                        # This sum node, which is again the parent of the found _node
-
-                        id1 = _node.id
-                        # println("ID ",_node.id)
-                        _weights = _node.weights
-                        _scope = _node.scope
-
-                        #Split will be only over the sum node
-                        node1 = SumNode(getID(), scope = _scope)
-                        node1.weights = _weights
-                        maxId = maximum(Int[node.id for node in nodes])
-                        id2 = maxId+1
-                        node2 = SumNode(getID(), scope = _scope)
-                        node2.weights = _weights
-
-                        share1 = [x for x in children(_node) if !(isa(x,IndicatorNode) && x.value == 0)]
-                        share2 = [x for x in children(_node) if !(isa(x,IndicatorNode) && x.value == 1)]
-
-                        # println([x.id for x in share1])
-                        # println([x.id for x in share2])
-
-                        for x in share1
-                            add!(node1, x)
-                        end
-                        for x in share2
-                            add!(node2, x)
-                        end
-                        add!(parents(_node)[1],node1)
-                        add!(parents(_node)[1],node2)
-
-
-                        remove!(parents(_node)[1],findfirst(children(parents(_node)[1]) .== _node))
-                    end
-                end
-            end
-        end
-    end
-
-end
-
+# function spnn_split!(node_id, var_id, spn)
+#     nodes = order(spn)
+#     nnode = [x for x in nodes if x.id == var_id][1]
+#     _var = nnode.scope
+#     _id = node_id
+#
+#     for node in nodes
+#         if (node.id == _id)
+#
+#             _nodes = order(node)
+#             for _node in _nodes
+#                 if isa(_node,SumNode)
+#                     indicators = [x for x in children(_node) if (isa(x,IndicatorNode) && x.scope == _var && x.value == 0)]
+#                     if (length(indicators)==1)
+#
+#                         # We assume that for every node there is only one parent
+#                         # And the parent of the node is the sum node and we split
+#                         # This sum node, which is again the parent of the found _node
+#
+#                         id1 = _node.id
+#                         # println("ID ",_node.id)
+#                         _weights = _node.weights
+#                         _scope = _node.scope
+#
+#                         #Split will be only over the sum node
+#                         node1 = SumNode(getID(), scope = _scope)
+#                         node1.weights = _weights
+#                         maxId = maximum(Int[node.id for node in nodes])
+#                         id2 = maxId+1
+#                         node2 = SumNode(getID(), scope = _scope)
+#                         node2.weights = _weights
+#
+#                         share1 = [x for x in children(_node) if !(isa(x,IndicatorNode) && x.value == 0)]
+#                         share2 = [x for x in children(_node) if !(isa(x,IndicatorNode) && x.value == 1)]
+#
+#                         # println([x.id for x in share1])
+#                         # println([x.id for x in share2])
+#
+#                         for x in share1
+#                             add!(node1, x)
+#                         end
+#                         for x in share2
+#                             add!(node2, x)
+#                         end
+#                         add!(parents(_node)[1],node1)
+#                         add!(parents(_node)[1],node2)
+#
+#
+#                         remove!(parents(_node)[1],findfirst(children(parents(_node)[1]) .== _node))
+#                     end
+#                 end
+#             end
+#         end
+#     end
+#
+# end
+#
 
 
 function isNodeValid!(node::Leaf)
@@ -696,7 +696,7 @@ function spn_merge!(spn, node::SumNode, variable)
             info("selected node: $(_node.id)")
     #         println("node scope 1, var in scope :", _node.id)
             for k in Ix_N(child2,variable)
-                @assert !(k in Ix_N(child1,variable)) "Merge condition was broken at node $(node.id) and child1 $(child1.id) and child2 $(child2.id) and variabe $(variable)"
+                #@assert !(k in Ix_N(child1,variable)) "Merge condition was broken at node $(node.id) and child1 $(child1.id) and child2 $(child2.id) and variabe $(variable)"
                 add!(_node, [x for x in order(child2) if isa(x,Leaf) && x.value == k && x.scope == variable][1])
             end
         end
@@ -795,16 +795,15 @@ function isSel(spn)
     max_var = maximum(spn.scope)
 	nodes = order(spn)
 
-	pos_states_tuples = collect(product(repeated(0:1,max_var)...))
+	pos_states_tuples = collect(product(Iterators.repeated(0:1,max_var)...))
 	len_ = length(pos_states_tuples)
 	pos_states_mat = zeros(Float64, len_, max_var)
 	for i in 1:len_
 		pos_states_mat[i,:] = collect(pos_states_tuples[i])
 	end
 
-	_llhval = Matrix{Float64}(len_, length(order(spn)))
+	_llhval = Matrix{Float64}(len_, length(nodes))
 	fill!(_llhval, -Inf)
-
 	for node in nodes
         eval!(node, pos_states_mat, _llhval)
 	end
@@ -899,7 +898,7 @@ function regular_selective_S(spn)
     nodes = filter(n -> isa(n, SumNode), order(spn))
 
     # Nehmen wir aus dennen alle, für die es mind. 1 Variable gibt, für die es für jede 2 Kinder gilt (in underem Fall Anzahl von Paaren ist 1, generell aber - Int(factorial(length(children(x))) / (factorial(2) * factorial(length(children(x))-2)))), dass die beide mindestens ein Zustand von dieser Variable haben, Durchschnitt von Indizes von dieser Variable von dieser Kinder ist aber leer.
-    nodes = filter(x -> length([var for var in x.scope if length( [(i,j) for i in 1:length(children(x)) for j in 1:length(children(x)) if (i>j && length(Ix_N(children(x)[i],var)) >= 1 && length(Ix_N(children(x)[j],var)) >= 1 && length(intersect(Ix_N(children(x)[i],var),Ix_N(children(x)[j],var))) == 0 )]) == 1 ]) == 1, nodes)
+    nodes = filter(x -> length(filter(var -> length( [(i,j) for i in 1:length(children(x)) for j in 1:i-1 if (length(Ix_N(children(x)[i],var)) >= 1 && length(Ix_N(children(x)[j],var)) >= 1 && length(intersect(Ix_N(children(x)[i],var),Ix_N(children(x)[j],var))) == 0 )]) == 1, x.scope)) == length(x.scope), nodes)
 
     nodes = filter(x -> length([ch for ch in children(x) if isa(ch,Leaf)]) != length(children(x)), nodes)
 
