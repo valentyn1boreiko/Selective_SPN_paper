@@ -30,11 +30,11 @@ function MI(x,y,base)
 end
 
 function reindex!(spn)
-    # nodes = reverse(order(spn))
-    # global globalID = 0
-    # for node in nodes
-    #     node.id = nextID()
-    # end
+    nodes = reverse(order(spn))
+    global globalID = 0
+    for node in nodes
+        node.id = nextID()
+    end
 end
 
 function getIndependentSets(X)
@@ -612,21 +612,21 @@ function spn_split!(node::ProductNode, C1, C2, var, states::Int, maxId)
     C2_strich = construct_SPN(C2)
 
     randState = rand(Ix_N(C1_strich,var))
-    randstate = rand([x.id for x in order(C1_strich) if isa(x,Leaf) && var == x.scope && randState == x.value])
+    randstate = rand([x for x in order(C1_strich) if isa(x,Leaf) && var == x.scope && randState == x.value])
 
     all_states = [x.id for x in order(C1_strich) if isa(x,Leaf) && var == x.scope]
     info("States: ",all_states)
 
     @assert length(all_states) >= 2
 
-    I_without_state = [x for x in all_states if x != randstate]
+    I_without_state = [x for x in all_states if x != randstate.id]
 
     #info("C1_strich kids before split", children(C1_strich))
     dismiss!(C1_strich, var, I_without_state)
     #info("C1_strich kids after split", children(C1_strich))
     spn2graphviz(C1_strich, "C1_strich_no_state.dot")
 
-    dismiss!(C1, var, [states])
+    dismiss!(C1, var, [x.id for x in order(C1) if isa(x,Leaf) && x.value == randstate.value])
     spn2graphviz(C1, "C1_no_states.dot")
 
 
@@ -789,8 +789,10 @@ end
 function isSel(spn)
 
     # relabel all nodes, to ensure all is fine
+    reindex!(spn)
     @assert isValid!(spn)
     isSelective = true
+
     # check for selectivity
     max_var = maximum(spn.scope)
 	nodes = order(spn)
@@ -804,7 +806,10 @@ function isSel(spn)
 
 	_llhval = Matrix{Float64}(len_, length(nodes))
 	fill!(_llhval, -Inf)
+    info("Nodes length $(length(nodes))")
+    info("Nodes ids $([x.id for x in nodes])")
 	for node in nodes
+        info("node id $(node.id)")
         eval!(node, pos_states_mat, _llhval)
 	end
 
@@ -984,7 +989,7 @@ function rand_move!(spn, counter; makePlot = false, verbose = false)
         # var = rand([q for q in x.scope for x in nodes if isa(x,ProductNode) && length([y for y in children(x) if length([z for z in order(y) if isa(z,Leaf) && z.scope == q ]) >=2 ]) >=1 ])
         nodes = filter(n -> isa(n, ProductNode), order(spn))
 
-        nodes = filter(x -> length([var for var in x.scope if length([y for y in children(x) if length([z for z in order(y) if isa(z,Leaf) && z.scope == var ]) >= 2 ]) >=1 ]) >=1 , nodes)
+        nodes = filter(x -> length(filter(var -> length([y for y in children(x) if length(unique([z.value for z in order(y) if isa(z,Leaf) && z.scope == var ])) >= 2 ]) >=1 , x.scope )) >=1 , nodes)
 
         len = length(nodes)
 
@@ -998,10 +1003,10 @@ function rand_move!(spn, counter; makePlot = false, verbose = false)
             if verbose
                 info("Node id: $(node.id), its scope: $(node.scope)")
             end
-            vars = [var for var in node.scope if length( [ch for ch in children(node) if length([z for z in order(ch) if isa(z,Leaf) && z.scope == var ]) >=2 ]) >=1 ]
+            vars = [var for var in node.scope if length( [ch for ch in children(node) if length(unique([z.value for z in order(ch) if isa(z,Leaf) && z.scope == var ])) >=2 ]) >=1 ]
             var = rand(vars)
 
-            C1 = [ch for ch in children(node) if length([z for z in order(ch) if isa(z,Leaf) && z.scope == var]) >= 2 ][1]
+            C1 = [ch for ch in children(node) if length(unique([z.value for z in order(ch) if isa(z,Leaf) && z.scope == var])) >= 2 ][1]
             C2 = [ch for ch in children(node) if  ch.id != C1.id][1]
 
             if verbose
