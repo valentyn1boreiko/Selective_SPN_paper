@@ -21,3 +21,5 @@ for i in 1:200
 	spn2graphviz(spn, "$(i).dot")
 
 end
+
+isSel(spn)
