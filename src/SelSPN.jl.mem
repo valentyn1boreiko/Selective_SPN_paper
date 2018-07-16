@@ -1,0 +1,174 @@
+        - using SelectiveSumProductNetworks
+        - using ArgParse
+        - using Plots
+        - 
+        - function parse_commandline()
+        - 
+        0     s = ArgParseSettings()
+        - 
+        0     @add_arg_table s begin
+        -         # "--opt1"
+        -         #     help = "an option with an argument"
+        -         # "--opt2", "-o"
+        -         #     help = "another option with an argument"
+        -         #     a	rg_type = Int
+        -         #     default = 0
+        -         # "--flag1"
+        -         #     help = "an option without argument, i.e. a flag"
+        -         #     action = :store_true
+        -         "dataDir"
+        -             help = "Data folder"
+        -             required = true
+        - 
+        -         "outDir"
+        -             help = "Data folder"
+        -             required = true
+        - 
+        -         "srcDir"
+        -             help = "Src folder"
+        -             required = true
+        - 
+        -         "data"
+        -             help = "dataset"
+        -             required = true
+        - 
+        -         #"valid.data"
+        -         #    help = "Validational dataset"
+        -         #    required = true
+        - 
+        -         "iters"
+        -             help = "Number of iterations"
+        -             required = true
+        -             arg_type = Int
+        - 
+        -         "--gen_pictures"
+        -             help = "Generate the structures found"
+        -             default = false
+        -             arg_type = Bool
+        - 
+        -         "--verbose"
+        -             help = "Verbose mode"
+        -             default = false
+        -             arg_type = Bool
+        - 
+        -         "--t_0"
+        -             help = "t_0"
+        -             default = 220
+        -             arg_type = Int
+        - 
+        -         "--t_n"
+        -             help = "t_n"
+        -             default = 0
+        -             arg_type = Int
+        - 
+        -         "temp"
+        -             help = "Temperature function"
+        -             required = true
+        - 
+        -         "--A"
+        -             help = "A in the Dirichlet parameter"
+        -             default = 1.
+        -             arg_type = Float64
+        - 
+        -         "param_Dir"
+        -             help = "method of the Dirichlet parameter"
+        -             required = true
+        - 
+        -         "--seed"
+        -             help = "Random seed"
+        -             required = true
+        -             arg_type = Int
+        - 
+        -         "--cosh_param"
+        -             help = "Random par of the cosh temperature"
+        -             default = 60.
+        -             arg_type = Float64
+        - 
+        -         "--rand_iter"
+        -             help = "Random seed"
+        -             arg_type = Int
+        -             default = 100
+        - 
+        -         "--check_iter"
+        -             help = "Random seed"
+        -             arg_type = Int
+        -             default = 10
+        - 
+        -     end
+        - 
+        0     return parse_args(s)
+        - end
+        - 
+        - function main()
+        - 
+   123552     parsed_args = parse_commandline()
+        0     gr()
+        - 
+        0     outDir = parsed_args["outDir"]
+     1056     outputDir = joinpath(outDir, parsed_args["data"], replace(string(now()), ":", "-"))
+        0     @assert !isdir(outputDir)
+     1488     mkpath(outputDir)
+        - 
+        0     info("Using the following output directory: ", outputDir)
+     1120     logging(open(joinpath(outputDir,"logfile.log"), "w"))
+        - 
+        -     # Logging.configure(filename=joinpath(outputDir,"logfile.log"))
+        - 
+        -     # read files
+        -     # include(joinpath(parsed_args["srcDir"],"spn2graphviz.jl"))
+        -     # include(joinpath(parsed_args["srcDir"],"SelSPNLib.jl"))
+        - 
+        -     # read data
+        0     X = convert(Array{Int}, readcsv(joinpath(parsed_args["dataDir"], string(parsed_args["data"], ".ts.data")  )))
+        0     Xval = convert(Array{Int}, readcsv(joinpath(parsed_args["dataDir"], string(parsed_args["data"], ".valid.data" ) )))
+        0     Xtest = convert(Array{Int}, readcsv(joinpath(parsed_args["dataDir"], string(parsed_args["data"], ".test.data"))))
+        - 
+        0     X += 1
+        0     Xval += 1
+        0     Xtest += 1
+        - 
+        - 
+        -     # info("X", joinpath(parsed_args["dataDir"],parsed_args["ts.data"]))
+        - 
+        -     # N_ = 10000
+        -     # D_ = 4
+        - 
+        -     # spn_data = generateRandomSelectiveSPN(D_)
+        -     # X_ = zeros(Int, N_, D_)
+        -     #
+        -     # drawData!(spn_data, X_, collect(1:N_))
+        -     #
+        -     # Xval = X_[1:convert(Int,0.2*N_),:]
+        -     # X = X_[1:convert(Int,0.8*N_),:]
+        -     #
+        -     # outDir = outputDir
+        -     # A = parsed_args["A"]
+        -     # param_Dir = Symbol(parsed_args["param_Dir"])
+        -     # println("saved")
+        - 
+        - 
+        -     #LBD_score(spn_data, X, A, param_Dir)
+        - 
+        -     # writecsv(joinpath(outDir,"history_bd_train_start.csv"), LBD_score(spn_data, X, A, param_Dir))
+        -     # writecsv(joinpath(outDir,"history_bd_val_start.csv"), LBD_score(spn_data, Xval, A, param_Dir))
+        -     # writecsv(joinpath(outDir,"history_llh_train_start.csv"), mean(llh(spn_data,X)))
+        -     # writecsv(joinpath(outDir,"history_llh_val_start.csv"), mean(llh(spn_data,Xval)))
+        -     # spn2graphviz(spn_data,joinpath(outDir,"optimize_start_data.dot"))
+        - 
+        0     (N, D) = size(X)
+        - 
+        0     spn = generateStartSelectiveSPN(D)
+        - 
+        -     # dim1_X, dim2_X = size(X)
+        -     # N = dim2_X
+        - 
+        -     # spn = generateRandomSelectiveSPN(N)
+        - 
+       16     spn2graphviz(spn,joinpath(outDir,"optimize_start.dot"))
+        - 
+        0     optimize!(spn, X, Xval, Xtest, parsed_args["iters"], parsed_args["temp"], parsed_args["t_0"], parsed_args["t_n"], parsed_args["A"], Symbol(parsed_args["param_Dir"]), parsed_args["seed"], outputDir, parsed_args["rand_iter"], parsed_args["check_iter"],parsed_args["cosh_param"],parsed_args["gen_pictures"],parsed_args["verbose"])
+        - 
+        - end
+        - 
+        - main()
+        - 

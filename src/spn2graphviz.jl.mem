@@ -1,0 +1,42 @@
+        - function spn2graphviz(spn::Node, filename; title = "", printids = true, printtitle = false)
+        - 
+   863670     gstring = ["digraph spn {"]
+        - 
+        0     if printtitle
+        0         push!(gstring, "labelloc=t;")
+        0         push!(gstring, "label=<<FONT POINT-SIZE=\"80\">$(title)</FONT>>;")
+        -     end
+        0     push!(gstring, "node [margin=0, fontsize=40, width=0.7, shape=circle, fixedsize=true];")
+        - 
+        0     nodes = SumProductNetworks.order(spn)
+        0     internalNodes = filter(n -> isa(n, Node), nodes)
+        - 
+        0     for node in nodes
+        0         idstring = ""
+        0         if printids
+    20800             idstring = ", xlabel=<<FONT POINT-SIZE=\"20\">$(node.id)</FONT>>"
+        -         end
+        - 
+        0         if isa(node, SumNode)
+     7344             push!(gstring, "$(node.id) [label=\"+\"$(idstring)];")
+        0         elseif isa(node, ProductNode)
+      448             push!(gstring, "$(node.id) [label=<&times;>$(idstring)];")
+        0         elseif isa(node, IndicatorNode)
+        0             push!(gstring, "$(node.id) [shape=doublecircle, label=\"X$(node.scope) = $(node.value)\", fontsize=15$(idstring)];")
+        -         end
+        -     end
+        - 
+      576     for node in internalNodes
+       80         for child in children(node)
+        0             push!(gstring, "$(node.id) -> $(child.id);")
+        -         end
+        -     end
+        - 
+        0     push!(gstring, "}")
+        - 
+       16     open(filename, "w") do f
+    10608         write(f, join(gstring, '\n'))
+        -     end
+        - end
+        - 
+        - 
